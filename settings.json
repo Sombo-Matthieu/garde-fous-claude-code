@@ -1,0 +1,201 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel ls *)",
+      "Bash(vercel env ls *)",
+      "Bash(vercel inspect *)",
+      "Bash(vercel domains ls *)",
+      "Bash(vercel whoami)",
+      "Bash(vercel --version)",
+      "Bash(supabase --version)",
+      "Bash(supabase status *)",
+      "Bash(supabase migration list *)",
+      "Bash(supabase projects list)",
+      "mcp__claude_ai_Gmail__search_threads",
+      "mcp__claude_ai_Gmail__list_drafts",
+      "mcp__claude_ai_Gmail__get_thread",
+      "mcp__plugin_vercel_vercel__list_deployments",
+      "mcp__plugin_vercel_vercel__get_deployment_build_logs",
+      "mcp__plugin_vercel_vercel__get_runtime_logs",
+      "Bash(echo:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(sort:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git remote:*)",
+      "Bash(git worktree list)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm test:*)",
+      "Bash(npm ci)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(node scripts/*)",
+      "mcp__supabase__execute_sql",
+      "mcp__claude-in-chrome__computer",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__find",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_console_messages",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__list_tables",
+      "mcp__claude_ai_Google_Drive__search_files",
+      "mcp__plugin_vercel_vercel__get_deployment",
+      "mcp__plugin_vercel_vercel__get_runtime_errors",
+      "Read(~/.claude/**)",
+      "Read(~/AppData/Local/Temp/claude/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Edit(~/.claude/projects/**)",
+      "Write(~/.claude/projects/**)",
+      "Edit(~/AppData/Local/Temp/claude/**)",
+      "Write(~/AppData/Local/Temp/claude/**)",
+      "Bash(gh issue close:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git grep:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git worktree list:*)"
+    ],
+    "deny": [
+      "Read(//**/.env)",
+      "Read(//**/.env.local)",
+      "Read(//**/.env.*.local)",
+      "Read(//**/.env.production)",
+      "Read(//**/.env.development)",
+      "Read(~/.ssh/**)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)",
+      "Read(//**/*.pem)",
+      "Bash(node -e *)",
+      "Bash(node --eval *)",
+      "Bash(python -c *)",
+      "Bash(python3 -c *)",
+      "Bash(py -c *)",
+      "Bash(cat *.env*)",
+      "Bash(head *.env*)",
+      "Bash(tail *.env*)",
+      "Bash(grep * *.env*)",
+      "Bash(find * -delete*)",
+      "Bash(find * -exec *)"
+    ],
+    "ask": [
+      "PowerShell(Remove-Item *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__supabase__execute_sql|mcp__supabase__apply_migration|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/guard-destructive-sql.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(command -v python3 || command -v python)\" \"$HOME/.claude/hooks/lisibilite-compteur.py\"",
+            "timeout": 10,
+            "statusMessage": "Compteur de réexplications…"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/stop-memory-check.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/post-commit-memory-reminder.sh",
+            "if": "Bash(git commit *)"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pr-issue-sweep-reminder.sh",
+            "if": "Bash(gh pr create *)"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(command -v python3 || command -v python)\" \"$HOME/.claude/hooks/lisibilite-compteur.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "vercel@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": false,
+    "supabase@claude-plugins-official": false,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "autoUpdatesChannel": "latest",
+  "tui": "fullscreen",
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark-ansi",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(supabase test db:*)",
+      "Bash(supabase status:*)",
+      "Bash(psql:* -c \\\\dt*)"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(supabase db reset:*)",
+      "Bash(supabase db push:*)"
+    ]
+  },
+  "voiceEnabled": true
+}

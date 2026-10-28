@@ -1,0 +1,39 @@
+# ~/.claude — sauvegarde de la CONFIG Claude Code réutilisable UNIQUEMENT.
+#
+# Ce dossier contient aussi des SECRETS (.credentials.json, .mcp.json),
+# de l'historique et du runtime jetable. Stratégie liste blanche :
+# on ignore TOUT par défaut, puis on ré-autorise seulement le non-sensible.
+
+# 1) Tout ignorer
+/*
+
+# 2) Ré-autoriser la config réutilisable (non sensible)
+!/.gitignore
+!/README.md
+!/NOUVEAU-PROJET.md
+!/settings.json
+!/CLAUDE.md
+!/hooks
+!/hooks/**
+!/agents
+!/agents/**
+!/commands
+!/commands/**
+
+# 3) Purge du runtime à l'intérieur des dossiers autorisés
+hooks/wt-locks/
+hooks/.last-memory-reminder
+hooks/*.last*
+# Copies de secours manuelles d'un hook avant modification : depuis que ce dépôt
+# existe, git EST la sauvegarde (toutes les versions, datées, avec le motif).
+# Garder des .bak à côté double un système fiable par un moins fiable, et crée
+# un doute sur laquelle est la bonne. Ignorés, pas supprimés : le ménage reste
+# une décision de Matthieu (constaté à l'audit du 2026-08-17).
+hooks/*.bak-*
+# Journaux d'exécution : grossissent sans fin, aucune valeur de configuration.
+hooks/*.log
+
+# NE JAMAIS versionner (rappel — déjà couverts par /* ci-dessus) :
+#   .credentials.json  .mcp.json  settings.local.json*  projects/  history.jsonl
+#   cache/ sessions/ tasks/ shell-snapshots/ plugins/ daemon* ide/ chrome/ ...
+lisibilite/
