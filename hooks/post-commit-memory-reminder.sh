@@ -16,18 +16,23 @@
 
 set -euo pipefail
 
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
-
 # Filtrage INTERNE : la clé "if" de settings.json ne filtre pas réellement
 # (vérifié 2026-06-25 : les hooks PostToolUse Bash tournent sur TOUTE commande).
 # On lit donc la commande déclenchante dans le JSON stdin et on sort en silence
 # si ce n'est pas un git commit — sinon ce rappel bruite à chaque commande.
 INPUT=$(cat)
-CMD=$(echo "$INPUT" | "$(command -v python3 || command -v python)" -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null || echo "$INPUT")
+PY="$(command -v python3 || command -v python || echo python)"
+CMD=$(echo "$INPUT" | "$PY" -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null || echo "$INPUT")
 case "$CMD" in
   *"git commit"*) : ;;   # commit → on continue
   *) exit 0 ;;          # tout le reste → silence
 esac
+
+# Dossier où la commande a tourné (champ "cwd" du JSON). CLAUDE_PROJECT_DIR pointe
+# le dossier PRINCIPAL du projet : depuis un worktree, le rappel citait le dernier
+# commit d'une autre session au lieu de celui qui venait d'être créé.
+CWD=$(echo "$INPUT" | "$PY" -c "import json,sys; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null || echo "")
+PROJECT_DIR="${CWD:-${CLAUDE_PROJECT_DIR:-$PWD}}"
 
 # Pas un repo git → silence
 if ! git -C "$PROJECT_DIR" rev-parse --git-dir >/dev/null 2>&1; then
