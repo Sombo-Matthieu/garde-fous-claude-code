@@ -13,13 +13,15 @@
 #   4. un WHERE caché dans un commentaire ne suffit pas à tromper le garde.
 set -u
 SCRIPT="${1:-$HOME/.claude/hooks/guard-destructive-sql.sh}"
+# python3 sous macOS/Linux, souvent seulement python sous Windows.
+PY="$(command -v python3 || command -v python)"
 ECHECS=0
 ok() { printf '  ✓ %s\n' "$1"; }
 ko() { printf '  ✗ %s\n' "$1"; ECHECS=$((ECHECS+1)); }
 
 # appel <outil> <cle> <valeur> -> code de sortie du garde
 appel() {
-  python3 -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"tool_input":{sys.argv[2]:sys.argv[3]}}))' "$1" "$2" "$3" \
+  "$PY" -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"tool_input":{sys.argv[2]:sys.argv[3]}}))' "$1" "$2" "$3" \
     | bash "$SCRIPT" 2>/dev/null
   echo $?
 }
